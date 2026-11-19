@@ -1,0 +1,11 @@
+{
+  "api": 1,
+  "mode": "companion",
+  "id": "utilitybelt",
+  "name": "UtilityBelt",
+  "short_name": "UB",
+  "version": "0.0.1",
+  "description": "Port of UtilityBelt features to the AC:Unreal plugin API. Scaffold only.",
+  "permissions": [],
+  "settings": []
+}
