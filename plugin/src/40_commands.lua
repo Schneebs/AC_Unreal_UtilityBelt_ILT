@@ -184,7 +184,9 @@ local function ub_command(text, requests)
     elseif verb == "settings" or verb == "" then
         if rest ~= "" then
             for _, tool in ipairs(settings.tools) do
-                if string.lower(tool.name) == string.lower(rest) then ub_ui.tool, ub_ui.page = tool.name, 1 end
+                if string.lower(tool.name) == string.lower(rest) then
+                    ub_ui.tool, ub_ui.page, ub_ui.filter, ub_ui.goto_settings = tool.name, 1, "", true
+                end
             end
         end
         requests[#requests + 1] = { id = "ub_window", service = "window", operation = "show" }

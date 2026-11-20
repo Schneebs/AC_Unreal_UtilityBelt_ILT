@@ -114,7 +114,8 @@ local function ui_events(snapshot)
     return changed
 end
 
-local function ui_build(snapshot)
+-- Controls for the Settings tab.
+local function settings_page(snapshot)
     if not ub_ui.tool then ub_ui.tool = tool_names[1] end
     local entries = ui_entries()
     local pages = math.max(1, (#entries + PAGE_SIZE - 1) // PAGE_SIZE)
@@ -171,22 +172,10 @@ local function ui_build(snapshot)
         { id = "ub_clear_filter", type = "button", text = "Clear filter", enabled = ub_ui.filter ~= "" },
     } }
 
-    local about_page = {
-        { id = "ub_version", type = "text", text = "UtilityBelt " .. UB_VERSION .. " for AC:Unreal", bold = true },
-        { id = "ub_port_note", type = "text", wrap = true,
-          text = "UB tools are being ported one at a time. Your settings are kept here, by their retail names, so each tool uses them as soon as it is ported." },
-        { id = "ub_cmd_note", type = "text", wrap = true,
-          text = "Commands: /plugin utilitybelt opt list | get <option> | set <option> <value> | toggle <option>, and /plugin utilitybelt help." },
-        { id = "ub_retail_status", type = "text", text = retail.status, wrap = true },
-        { id = "ub_retail_import", type = "button", text = "Import from retail",
-          tooltip = "Replace this character's settings with its retail UtilityBelt settings (run UB Manager's Import first)",
-          enabled = retail.pending == nil },
-    }
+    return settings_page
+end
 
-    return {
-        { id = "ub_tabs", type = "tabs", children = {
-            { id = "ub_tab_settings", type = "column", text = "Settings", children = settings_page },
-            { id = "ub_tab_about", type = "column", text = "Import / About", children = about_page },
-        } },
-    }
+-- Jumps the Settings tab to one tool (used by "Settings" buttons on other tabs).
+local function show_tool_settings(tool)
+    ub_ui.tool, ub_ui.page, ub_ui.filter = tool, 1, ""
 end

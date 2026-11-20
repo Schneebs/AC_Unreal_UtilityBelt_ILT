@@ -100,7 +100,7 @@ return {
             end,
         },
         {
-            snapshot = function() return snap({ { type = "change", id = "ub_filter", value = "jumper.attempts" } }, last_state) end,
+            snapshot = function() return snap({ { type = "click", id = "ub_t_Settings" }, { type = "change", id = "ub_filter", value = "jumper.attempts" } }, last_state) end,
             check = function(out, t)
                 local editor = find_prefix(out.ui, "ub_s_")
                 t.ok(editor and editor.type == "number" and editor.value == 3, "filter shows the setting with a number editor")
@@ -137,6 +137,7 @@ return {
             snapshot = function() return snap({ { type = "change", id = "ub_tool", value = "OverlayMap" } }, last_state) end,
             check = function(out, t)
                 t.ok(out.requests ~= nil and #out.requests > 0, "queued list lines keep flowing")
+                t.ok(#out.requests <= 4, "still at most four per callback")
                 local color = find_prefix(out.ui, "ub_s_")
                 local any_color
                 local function scan(list)

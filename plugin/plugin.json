@@ -5,20 +5,110 @@
   "name": "UtilityBelt",
   "short_name": "UB",
   "version": "0.0.0-dev",
-  "description": "UtilityBelt for AC:Unreal: a port of the retail UtilityBelt Decal plugin. Settings window and /ub opt (as /plugin utilitybelt opt); tools are being ported.",
+  "description": "UtilityBelt for AC:Unreal: a port of the retail UtilityBelt Decal plugin. Settings, /ub opt (as /plugin utilitybelt opt), Quests, and the ILT Bank, QB, XP Calc, Augs and Enlightenment tools.",
   "permissions": [
+    "chat",
     "data",
     "profiles",
+    "say",
     "state",
     "ui"
   ],
   "settings": [],
   "snapshot_fields": [
-    "character_name"
+    "character_name",
+    "level",
+    "char_ints",
+    "char_quads",
+    "base_health",
+    "base_stamina",
+    "base_mana",
+    "inventory",
+    "chat_events",
+    "chat_serial",
+    "chat_more"
   ],
   "presentation": {
     "title": "UtilityBelt",
     "controls": "none",
     "settings": false
-  }
+  },
+  "chat_history": false,
+  "chat_subscriptions": [
+    {
+      "id": "bank",
+      "contains": "[BANK]",
+      "sender_type": "server"
+    },
+    {
+      "id": "bank_sent",
+      "prefix": "Transferred ",
+      "sender_type": "server"
+    },
+    {
+      "id": "bank_received",
+      "prefix": "Received ",
+      "sender_type": "server"
+    },
+    {
+      "id": "qb_header",
+      "prefix": "Your completed quest bonus list",
+      "sender_type": "server"
+    },
+    {
+      "id": "qb_header2",
+      "prefix": "Your incomplete quest bonus list",
+      "sender_type": "server"
+    },
+    {
+      "id": "qb_empty",
+      "prefix": "Quest bonus list is empty",
+      "sender_type": "server"
+    },
+    {
+      "id": "qb_flag",
+      "pattern": "^[A-Za-z0-9_\\-!@()?]+$",
+      "sender_type": "server"
+    },
+    {
+      "id": "xp_cost",
+      "prefix": "[XP] ",
+      "sender_type": "server"
+    },
+    {
+      "id": "attr_raised",
+      "prefix": "Your base ",
+      "sender_type": "server"
+    },
+    {
+      "id": "aug_header",
+      "contains": "Advanced Augmentation Levels:",
+      "sender_type": "server"
+    },
+    {
+      "id": "aug_line",
+      "pattern": "^\\w+:\\s*[\\d,]+\\s*$",
+      "sender_type": "server"
+    },
+    {
+      "id": "myquests",
+      "contains": " solves (",
+      "sender_type": "server"
+    },
+    {
+      "id": "myquests_empty",
+      "prefix": "Quest list is empty",
+      "sender_type": "server"
+    },
+    {
+      "id": "cmd_cooldown",
+      "contains": "This command may only be run once every",
+      "sender_type": "server"
+    },
+    {
+      "id": "cmd_disabled",
+      "contains": "is not currently enabled on this server",
+      "sender_type": "server"
+    }
+  ]
 }

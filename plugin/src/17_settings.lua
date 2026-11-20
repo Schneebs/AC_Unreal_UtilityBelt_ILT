@@ -10,6 +10,7 @@
 local settings = {
     values = {},        -- store = "setting" (retail settings.json)
     charstate = {},     -- store = "state"   (retail state.json, per character)
+    data = {},          -- per-character tool data (bank, transactions, aug targets...)
     dirty = false,
     loaded = false,     -- true once values came from state or a retail import
     by_name = {},       -- lower-case full name -> schema entry
@@ -190,6 +191,7 @@ local function settings_load(state)
         settings.loaded = true
     end
     if type(state.ub_charstate) == "table" then settings.charstate = deep_copy(state.ub_charstate) end
+    if type(state.ub_data) == "table" then settings.data = deep_copy(state.ub_data) end
 end
 
 -- Returns a full state table to save when anything changed, else nil.
@@ -200,6 +202,7 @@ local function settings_state(state)
     for k, v in pairs(state or {}) do out[k] = v end
     out.ub_settings = deep_copy(settings.values)
     out.ub_charstate = deep_copy(settings.charstate)
+    out.ub_data = deep_copy(settings.data)
     return out
 end
 
