@@ -36,7 +36,7 @@ Download `utilitybelt-<version>.zip` from the [latest release](https://github.co
 and extract it into the client's user plugin folder, so you end up with:
 
 ```
-%LOCALAPPDATA%\ACUnreal\Saved\ClientPlugins\Installed\utilitybelt\
+%LOCALAPPDATA%\Programs\ACUnreal\ACUnreal\Saved\ClientPlugins\Installed\utilitybelt\
 ```
 
 (For a source build of the client: `<repo>\Unreal\Saved\ClientPlugins\Installed\utilitybelt\`.)

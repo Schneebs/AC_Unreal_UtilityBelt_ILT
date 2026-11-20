@@ -33,11 +33,17 @@ namespace UBManager
             var found = new List<ClientTarget>();
             var local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
-            // Installed client: Saved lives under %LOCALAPPDATA%\ACUnreal\Saved.
+            // Installed client: Saved lives inside the install folder, at
+            // <install>\ACUnreal\Saved (verified with v162: its log is written to
+            // <install>\ACUnreal\Saved\Logs\ACUnreal.log). Default install: %LOCALAPPDATA%\Programs\ACUnreal.
             var installedLocation = ReadInstallLocation() ?? Path.Combine(local, "Programs", "ACUnreal");
-            var packagedSaved = Path.Combine(local, "ACUnreal", "Saved", "ClientPlugins");
-            if (Directory.Exists(installedLocation) || Directory.Exists(packagedSaved))
-                found.Add(new ClientTarget { Label = "AC:Unreal (installed)", ClientPluginsDir = packagedSaved, Detected = true });
+            if (File.Exists(Path.Combine(installedLocation, "ACUnreal.exe")))
+                found.Add(new ClientTarget
+                {
+                    Label = "AC:Unreal (installed)",
+                    ClientPluginsDir = Path.Combine(installedLocation, "ACUnreal", "Saved", "ClientPlugins"),
+                    Detected = true,
+                });
 
             foreach (var folder in extraFolders ?? Enumerable.Empty<string>())
             {
@@ -59,6 +65,8 @@ namespace UBManager
                 return new ClientTarget { Label = "Source build", ClientPluginsDir = Path.Combine(full, "Unreal", "Saved", "ClientPlugins") };
             if (File.Exists(Path.Combine(full, "ACUnreal.uproject")))
                 return new ClientTarget { Label = "Source build", ClientPluginsDir = Path.Combine(full, "Saved", "ClientPlugins") };
+            if (File.Exists(Path.Combine(full, "ACUnreal.exe")) && Directory.Exists(Path.Combine(full, "ACUnreal")))
+                return new ClientTarget { Label = "Installed or packaged client", ClientPluginsDir = Path.Combine(full, "ACUnreal", "Saved", "ClientPlugins") };
             if (Directory.Exists(Path.Combine(full, "ClientPlugins")))
                 return new ClientTarget { Label = "Custom", ClientPluginsDir = Path.Combine(full, "ClientPlugins") };
             return null;
