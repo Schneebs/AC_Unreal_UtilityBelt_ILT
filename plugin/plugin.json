@@ -4,8 +4,8 @@
   "id": "utilitybelt",
   "name": "UtilityBelt",
   "short_name": "UB",
-  "version": "0.0.1",
-  "description": "Port of UtilityBelt features to the AC:Unreal plugin API. Scaffold only.",
+  "version": "0.0.0-dev",
+  "description": "UtilityBelt for AC:Unreal: a port of the retail UtilityBelt Decal plugin. Early development.",
   "permissions": [],
   "settings": []
 }
