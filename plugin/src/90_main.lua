@@ -15,6 +15,8 @@ local function outbox_flush(now)
 end
 
 local last_character
+local UI_REFRESH = 5          -- seconds; also rebuilt at once after any input or reply
+local ui_built_at = -1000
 
 return function(snapshot, profile)
     local now = snapshot.time or 0
@@ -66,6 +68,12 @@ return function(snapshot, profile)
     if saved then out.state = saved end
 
     out.status = "UtilityBelt " .. UB_VERSION .. " · " .. retail.status
-    out.ui = window_build(snapshot)
+    -- Rebuilding and sending ~150 controls costs real frame time, so only do it when
+    -- something changed (input, replies, saved data) or every few seconds for timers.
+    local changed = #(snapshot.events or {}) > 0 or #lines > 0 or saved ~= nil or out.requests ~= nil
+    if changed or now - ui_built_at >= UI_REFRESH then
+        out.ui = window_build(snapshot)
+        ui_built_at = now
+    end
     return out
 end

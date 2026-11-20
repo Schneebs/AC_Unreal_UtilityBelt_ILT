@@ -129,7 +129,8 @@ return {
               local i = find_control(out.ui, "ub_aug_l_Item")
               t.ok(i and i.tooltip == "16,501,400,000", "item 1249->1251 crosses into the x4 tier (got " .. tostring(i and i.tooltip) .. ")")
           end },
-        { snapshot = function() return snap({ click("ub_i_Enl") }) end,
+        { snapshot = function() return snap({ click("ub_i_Enl"), change("ub_enl_have_tokens", 300), change("ub_enl_have_meds", 20),
+                                               change("ub_enl_have_parts", 5) }) end,
           check = function(out, t)
               record(out)
               local cur = find_control(out.ui, "ub_enl_cur")

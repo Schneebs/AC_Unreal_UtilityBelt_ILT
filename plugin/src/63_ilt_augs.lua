@@ -187,25 +187,16 @@ local function enl_level_cost(level)
     return 0, 0, 0
 end
 
-local function count_items(snapshot, part)
-    local n = 0
-    for _, item in ipairs(snapshot.inventory or {}) do
-        if string.contains(string.lower(tostring(item.name or "")), part) then n = n + (tonumber(item.stack) or 1) end
-    end
-    return n
-end
-
+-- Counts come from typed-in numbers (saved per character): reading the whole
+-- inventory every callback cost too much frame time for one tab.
 local function enl_available(snapshot)
-    local parts = count_items(snapshot, "part of a medallion")
-    local tokens = count_items(snapshot, "enlightenment token")
-    local meds = count_items(snapshot, "medallion") - parts
+    local d = data_get("enl")
+    local tokens, meds, parts = tonumber(d.have_tokens) or 0, tonumber(d.have_meds) or 0, tonumber(d.have_parts) or 0
     return {
         lum = tonumber(data_get("bank").Luminance) or 0,
         tokens = tokens,
         meds = meds + math.min(parts, tokens),
         parts = parts,
-        trophies = count_items(snapshot, "void trophy") + count_items(snapshot, "vod trophy"),
-        powders = count_items(snapshot, "yellow powder"),
     }
 end
 
@@ -275,7 +266,11 @@ local function enl_page(snapshot)
         summary("ub_enl_s_lum", "Luminance (bank)", need_lum, avail.lum),
         summary("ub_enl_s_tok", "Enlightenment Tokens", need_tokens, avail.tokens),
         summary("ub_enl_s_med", "Medallions (+parts with tokens)", need_meds, avail.meds),
-        w_text("ub_enl_s_parts", "Parts of a Medallion: " .. avail.parts .. " · Void Trophies: " .. avail.trophies .. " · Yellow Powders: " .. avail.powders),
+        w_row("ub_enl_have", {
+            { id = "ub_enl_have_tokens", type = "number", text = "Tokens I have", value = avail.tokens, min = 0, max = 1000000, step = 1 },
+            { id = "ub_enl_have_meds", type = "number", text = "Medallions", value = tonumber(data_get("enl").have_meds) or 0, min = 0, max = 1000000, step = 1 },
+            { id = "ub_enl_have_parts", type = "number", text = "Parts", value = avail.parts, min = 0, max = 1000000, step = 1 },
+        }),
         w_text("ub_enl_status", (affordable >= #levels and #levels > 0) and ("Status: ready for all " .. #levels .. " levels")
             or ("Status: enough for " .. affordable .. " of " .. #levels .. " levels" .. (blocked_by and (" (short on " .. blocked_by .. ")") or "")),
             { color = (affordable >= #levels and #levels > 0) and "green" or "yellow" }),
@@ -287,7 +282,13 @@ end
 local function enl_events(snapshot)
     for _, e in ipairs(snapshot.events or {}) do
         local id = e.id or ""
-        if e.type == "change" and (id == "ub_enl_cur" or id == "ub_enl_tgt") then
+        if e.type == "change" and starts_with(id, "ub_enl_have_") then
+            local v = tonumber(e.value)
+            if v then
+                data_get("enl")["have_" .. string.sub(id, 13)] = math.max(0, math.tointeger(math.floor(v + 0.5)) or 0)
+                data_changed()
+            end
+        elseif e.type == "change" and (id == "ub_enl_cur" or id == "ub_enl_tgt") then
             local v = tonumber(e.value)
             if v then
                 local d = data_get("enl")

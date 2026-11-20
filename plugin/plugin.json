@@ -23,7 +23,6 @@
     "base_health",
     "base_stamina",
     "base_mana",
-    "inventory",
     "chat_events",
     "chat_serial",
     "chat_more"
@@ -31,7 +30,11 @@
   "presentation": {
     "title": "UtilityBelt",
     "controls": "none",
-    "settings": false
+    "settings": false,
+    "status": false,
+    "window": {
+      "opacity": 0.9
+    }
   },
   "chat_history": false,
   "chat_subscriptions": [
@@ -110,5 +113,6 @@
       "contains": "is not currently enabled on this server",
       "sender_type": "server"
     }
-  ]
+  ],
+  "update_interval": 1.0
 }

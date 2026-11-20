@@ -32,7 +32,7 @@ end
 local function tab_bar(prefix, tabs, selected, per_row)
     local rows, row = {}, {}
     for _, name in ipairs(tabs) do
-        row[#row + 1] = w_button(tab_id(prefix, name), name, { color = selected == name and "yellow" or nil, bold = selected == name })
+        row[#row + 1] = w_button(tab_id(prefix, name), name, { size = 11, color = selected == name and "yellow" or nil, bold = selected == name })
         if #row == per_row then rows[#rows + 1] = w_row(prefix .. "row" .. #rows, row, { compact = true }); row = {} end
     end
     if #row > 0 then rows[#rows + 1] = w_row(prefix .. "row" .. #rows, row, { compact = true }) end
@@ -44,8 +44,8 @@ local function not_ported_page(name)
     return {
         w_tool_note("ub_np_title", name .. " isn't ported yet."),
         w_text("ub_np_why", info.why),
-        w_text("ub_np_kept", "Its retail settings are kept and can be edited now; the tool will use them once it's ported."),
-        w_button("ub_goto_" .. info.tool, "Open " .. info.tool .. " settings"),
+        w_text("ub_np_kept", "Its settings are kept and editable now."),
+        w_row("ub_np_btn", { w_button("ub_goto_" .. info.tool, "Open " .. info.tool .. " settings") }, { compact = true }),
     }
 end
 
@@ -78,27 +78,27 @@ end
 
 local function ub_main_page()
     local rows = {
-        w_text("ub_main_note", "Retail's switches. The tools behind them aren't ported yet, so for now they only save the setting.", { color = "yellow" }),
+        w_text("ub_main_note", "Retail switches. These tools aren't ported yet; switches save the setting.", { color = "yellow", size = 11 }),
     }
     for _, r in ipairs(toggle_grid("ub_main_t", UB_MAIN_TOGGLES)) do rows[#rows + 1] = r end
-    rows[#rows + 1] = w_text("ub_main_alt", "In AC:Unreal, Waypoint covers Arrow and the maps, and Hunt Ledger covers the XP meter.")
+    rows[#rows + 1] = w_text("ub_main_alt", "Waypoint covers Arrow and the maps; Hunt Ledger covers the XP meter.", { size = 11 })
     return rows
 end
 
 local function ilt_main_page(snapshot)
     local rows = {}
     if not leaftide_active(snapshot.server) then
-        rows[#rows + 1] = w_tool_note("ub_ilt_gate", "ILT tools are for InfiniteLeaftide. On another server (such as a test server), turn on Plugin.ForceLeaftideFeatures.")
+        rows[#rows + 1] = w_tool_note("ub_ilt_gate", "Not on InfiniteLeaftide. For a test server, force ILT features:")
         rows[#rows + 1] = w_setting_check("Plugin.ForceLeaftideFeatures", "Force Leaftide features on this server")
     end
-    rows[#rows + 1] = w_text("ub_ilt_note", "These switches save their settings; the tools behind them aren't ported yet (they use items or spells, which needs UtilityBelt to act alongside UCM).", { color = "yellow" })
+    rows[#rows + 1] = w_text("ub_ilt_note", "Not ported yet (they use items); switches save the setting.", { color = "yellow", size = 11 })
     for _, r in ipairs(toggle_grid("ub_ilt_t", ILT_MAIN_TOGGLES)) do rows[#rows + 1] = r end
     rows[#rows + 1] = w_row("ub_ilt_actions", {
         w_button("ub_ilt_chunk", "Chunk Aeth", { enabled = false, tooltip = "Not ported yet (uses items)" }),
         w_button("ub_ilt_chunkc", "Chunk Corr", { enabled = false, tooltip = "Not ported yet (uses items)" }),
         w_button("ub_ilt_clap", "Auto-Clap", { enabled = false, tooltip = "Not ported yet (uses items)" }),
     })
-    rows[#rows + 1] = w_text("ub_ilt_working", "Working now: QB, Bank, Trans, XP Calc, Augs and Enl.", { color = "green" })
+    rows[#rows + 1] = w_text("ub_ilt_working", "Working now: QB, Bank, Trans, XP Calc, Augs, Enl.", { color = "green", size = 11 })
     return rows
 end
 
@@ -132,11 +132,36 @@ local function window_events(snapshot)
     end
 end
 
+-- Final pass over the window: the client rejects the whole UI (and stops the plugin)
+-- if any ID is empty, repeated or over 64 characters, or text/tooltips are too long.
+-- Also applies the compact default font size.
+local UI_FONT = 12
+local SIZED = { text = true, button = true, checkbox = true, input = true, select = true, number = true, section = true }
+
+local function ui_finalize(list, seen)
+    seen = seen or {}
+    for i, c in ipairs(list) do
+        local id = tostring(c.id or ("ub_auto_" .. i))
+        if #id > 64 then id = string.sub(id, 1, 52) .. "_" .. tostring(#id) .. "_" .. tostring(i) end
+        if seen[id] then
+            seen[id] = seen[id] + 1
+            id = string.sub(id, 1, 56) .. "~" .. seen[id]
+        end
+        seen[id] = seen[id] or 1
+        c.id = id
+        if type(c.text) == "string" and #c.text > 4000 then c.text = string.sub(c.text, 1, 3997) .. "..." end
+        if type(c.tooltip) == "string" and #c.tooltip > 1000 then c.tooltip = string.sub(c.tooltip, 1, 997) .. "..." end
+        if SIZED[c.type] and c.size == nil then c.size = UI_FONT end
+        if type(c.children) == "table" then ui_finalize(c.children, seen) end
+    end
+    return list
+end
+
 local function window_build(snapshot)
     local root = {
         w_row("ub_groups", {
-            w_button("ub_grp_UB", "UtilityBelt", { color = win.group == "UB" and "yellow" or nil, bold = win.group == "UB" }),
-            w_button("ub_grp_ILT", "ILT", { color = win.group == "ILT" and "yellow" or nil, bold = win.group == "ILT" }),
+            w_button("ub_grp_UB", "UtilityBelt", { size = 13, color = win.group == "UB" and "yellow" or nil, bold = win.group == "UB" }),
+            w_button("ub_grp_ILT", "ILT", { size = 13, color = win.group == "ILT" and "yellow" or nil, bold = win.group == "ILT" }),
         }, { compact = true }),
     }
     local page
@@ -150,7 +175,7 @@ local function window_build(snapshot)
     else
         for _, r in ipairs(tab_bar("ub_i_", ILT_TABS, win.ilt, 6)) do root[#root + 1] = r end
         if win.ilt ~= "Main" and not leaftide_active(snapshot.server) then
-            root[#root + 1] = w_tool_note("ub_ilt_warn", "Not on InfiniteLeaftide: these commands only work on ILT servers (see ILT > Main).")
+            root[#root + 1] = w_tool_note("ub_ilt_warn", "Not on InfiniteLeaftide: these commands need an ILT server (see ILT > Main).")
         end
         if win.ilt == "Main" then page = ilt_main_page(snapshot)
         elseif win.ilt == "QB" then page = qb_page()
@@ -162,5 +187,6 @@ local function window_build(snapshot)
         else page = not_ported_page(win.ilt) end
     end
     root[#root + 1] = w_column("ub_page", page)
-    return root
+    -- A frame overlays its children, so the content goes in one column inside it.
+    return ui_finalize({ { id = "ub_frame", type = "frame", color = "#0A0806D9", children = { w_column("ub_root", root) } } })
 end
