@@ -8,8 +8,21 @@ plugin-API additions go to [Thwargle/ACE](https://github.com/Thwargle/ACE).
 
 ## Status
 
-Early development. The plugin loads, shows its version and your health, and can apply your
-retail UtilityBelt settings (Import from retail). No UB tools are ported yet.
+Early development. No UB tools are ported yet. What works:
+
+- **Settings window** with every retail UB setting (55 tools, 453 settings) under its retail name,
+  type and default: pick a tool or filter across all of them, edit with checkboxes, numbers, text and
+  color pickers, and **Reset** a changed setting. Settings are saved per character, in retail's
+  `settings.json` shape (only non-default values), so each tool uses them as soon as it is ported.
+- **`/ub opt`**: `list [filter]`, `get <option>`, `set <option> <value>`, `toggle <option>`, and
+  `add`/`remove`/`clear` for list settings, as in retail. AC:Unreal doesn't route `/ub` to plugins
+  yet, so type `/plugin utilitybelt opt ...` (pasting a full `/ub opt ...` after it also works).
+  `/plugin utilitybelt` alone opens the window; `/plugin utilitybelt help` lists commands.
+- **Import from retail** replaces the character's settings with its retail ones (see UB Manager below).
+  It runs automatically the first time each character logs in.
+
+The settings list is generated from the UB ILT source:
+`python tools/gen-settings-schema.py <UtilityBelt source>\UtilityBelt` rewrites `plugin/src/15_schema.lua`.
 
 ## Install with UB Manager (recommended)
 
@@ -70,7 +83,7 @@ New-Item -ItemType Junction -Path '<client>\Saved\ClientPlugins\Installed\utilit
 Tests (Lua 5.4) run in CI on every push; locally:
 
 ```powershell
-lua5.4 tools/test/run_tests.lua dist/utilitybelt/main.lua tools/test/cases/startup.lua
+lua5.4 tools/test/run_tests.lua dist/utilitybelt/main.lua tools/test/cases/*.lua
 ```
 
 ## Releasing
@@ -84,7 +97,8 @@ then attaches `utilitybelt-<version>.zip`, `UBManager.exe`, their `.sha256` file
 
 | Path | Purpose |
 | --- | --- |
-| `plugin/src/*.lua` | Lua modules, concatenated in name order into `main.lua` |
+| `plugin/src/*.lua` | Lua modules, concatenated in name order into `main.lua` (`15_schema.lua` is generated) |
+| `tools/gen-settings-schema.py` | Generates the settings list from the UB source |
 | `plugin/plugin.json` | Manifest: ID, mode, permissions, settings (version is stamped at build) |
 | `plugin/default.json` | Default profile |
 | `plugin/assets/` | `images/` and `sounds/` copied into the plugin |
@@ -99,4 +113,4 @@ UtilityBelt features the AC:Unreal plugin API can't support yet. These become re
 
 | UB feature | What the API is missing | Raised |
 | --- | --- | --- |
-| | | |
+| `/ub ...` commands | A way for a plugin to claim a chat command prefix (e.g. manifest `"chat_command": "ub"` routing `/ub x` like `/acueplugin utilitybelt x`) | Not yet |
