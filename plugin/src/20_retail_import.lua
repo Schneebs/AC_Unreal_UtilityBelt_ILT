@@ -1,11 +1,11 @@
--- Retail import: applies retail UtilityBelt settings that UB Manager copied into this
--- plugin's profile library (Profiles/utilitybelt/Library/r_*). Flow:
+-- Retail import: loads retail UtilityBelt settings that UB Manager copied into this
+-- plugin's profile library (Profiles/utilitybelt/Library/r_*) into the settings store.
 --   r_index/index (ub_index) -> find this server's world
 --   <world group>/_index (ub_characters) -> find this character's file
---   <world group>/<file> (ub_settings) -> apply to the running configuration
--- The match is remembered in per-character state (ub_retail), so later logins reload
--- the settings automatically. The library copy is the source of truth; a profile_patch
--- is not a disk save, so settings are re-applied each session.
+--   <world group>/<file> (ub_settings) -> replace the character's settings
+-- Runs automatically on a character's first login (no saved settings yet) and when
+-- the player presses Import from retail. The settings are then saved in the
+-- character's plugin state; later edits (window or /ub opt) are saved the same way.
 
 local RETAIL_TIMEOUT = 10          -- seconds to wait for a service result
 local PATCH_MAX_NODES = 30000      -- client limits for profile_patch trees
@@ -96,8 +96,11 @@ local function retail_tick(snapshot, wants_import)
 
     if retail.phase == "start" then
         if not character or character == "" then return out end
-        if type(saved) == "table" and saved.group and saved.file then
-            -- Reapply the remembered match for this character.
+        if settings.loaded then
+            retail.phase = "done"
+            retail.status = "Settings loaded for " .. character
+        elseif type(saved) == "table" and saved.group and saved.file then
+            -- Reapply a match remembered by plugin versions before 0.3 (no saved settings).
             retail.phase, retail.remembered = "settings", true
             retail.world, retail.group, retail.character, retail.file = saved.world, saved.group, saved.character, saved.file
             retail.status = "Retail import: loading settings for " .. tostring(saved.character)
@@ -120,6 +123,10 @@ local function retail_tick(snapshot, wants_import)
             return out
         end
         retail.pending = nil
+        -- The client rate-limits all of a plugin's service requests together: resend.
+        if not result.ok and string.contains(string.lower(tostring(result.error or "")), "rate limit") then
+            result = nil
+        end
     end
 
     if retail.phase == "index" then
@@ -187,12 +194,11 @@ local function retail_tick(snapshot, wants_import)
         end
         retail.phase = "done"
         if not result.ok or type(result.data) ~= "table" then
-            retail.status = "Retail import: " .. tostring(retail.character) .. " has no retail settings to apply"
+            retail.status = "Retail import: " .. tostring(retail.character) .. " has no retail settings (it uses UB defaults on retail too)"
             return out
         end
         local budget = { nodes = 0, dropped = 0 }
-        local settings = sanitize(result.data, 1, budget) or {}
-        out.profile_patch = { ub_settings = settings }
+        settings_replace(sanitize(result.data, 1, budget) or {})
         if not retail.remembered then
             local new_state = {}
             for k, v in pairs(state) do new_state[k] = v end

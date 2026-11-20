@@ -1,13 +1,15 @@
--- Retail import walks index -> character list -> settings, then patches the profile
--- and remembers the match in state. Results are fed back with the request ids.
+-- Retail import walks index -> character list -> settings, then saves the settings
+-- in state and remembers the match. Results are fed back with the request ids.
+local clock = 1
 local function request_of(out)
     return out and out.requests and out.requests[1]
 end
 
 local function reply(prev, data, ok)
     local r = request_of(prev)
+    clock = clock + 1
     return {
-        time = 10, unix_time = 1790000000, server = "Infinite Leaftide", character_name = "Schneebly",
+        time = clock, unix_time = 1790000000, server = "Infinite Leaftide", character_name = "Schneebly",
         state = {}, health = 100, max_health = 100,
         events = { { type = "result", id = r and r.id, ok = ok ~= false, data = data } },
     }
@@ -49,10 +51,10 @@ return {
                 return reply(prev, { Plugin = { Debug = true }, Looter = { Enabled = false }, Huge = string.rep("x", 5000) })
             end,
             check = function(out, t)
-                t.ok(out.profile_patch and out.profile_patch.ub_settings, "patches ub_settings into the profile")
-                local s = out.profile_patch and out.profile_patch.ub_settings or {}
-                t.ok(s.Plugin and s.Plugin.Debug == true, "keeps ordinary settings")
-                t.ok(s.Huge == nil, "drops strings over the client's 4 KiB limit")
+                local s = out.state and out.state.ub_settings or {}
+                t.ok(out.profile_patch == nil, "no longer patches the profile")
+                t.ok(s.Plugin and s.Plugin.Debug == true, "saves ordinary settings in state")
+                t.ok(s.Huge == nil, "drops strings over 4 KiB")
                 t.ok(out.state and out.state.ub_retail and out.state.ub_retail.file == "Schneebly", "remembers the match in state")
                 t.ok(out.status and string.find(out.status, "applied", 1, true) ~= nil, "status reports success")
             end,
