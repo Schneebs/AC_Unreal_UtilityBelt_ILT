@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <RootNamespace>UBManager</RootNamespace>
+    <AssemblyName>UBManager</AssemblyName>
+    <Version>0.0.0-dev</Version>
+    <Product>UB Manager</Product>
+    <Description>Installs and updates UtilityBelt for AC:Unreal and imports retail UtilityBelt data.</Description>
+    <Company>AC_Unreal_UtilityBelt_ILT</Company>
+    <Copyright>UtilityBelt for AC:Unreal contributors</Copyright>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- Ship one exe: LiteDB is embedded as a resource and loaded on demand. -->
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Lets the dotnet SDK build net48 on any machine without the targeting pack. -->
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+    <!-- UtilityBelt writes utilitybelt.db with LiteDB 4.1.4 (v4 file format, which LiteDB 5
+         cannot reliably upgrade), so read it with the same major version. No dependencies. -->
+    <PackageReference Include="LiteDB" Version="4.1.4" GeneratePathProperty="true" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="$(PkgLiteDB)\lib\net40\LiteDB.dll" LogicalName="LiteDB.dll" Visible="false" />
+  </ItemGroup>
+
+</Project>

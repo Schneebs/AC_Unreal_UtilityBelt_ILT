@@ -1,11 +1,26 @@
 {
-  "api": 1,
+  "api": 2,
   "mode": "companion",
   "id": "utilitybelt",
   "name": "UtilityBelt",
   "short_name": "UB",
   "version": "0.0.0-dev",
   "description": "UtilityBelt for AC:Unreal: a port of the retail UtilityBelt Decal plugin. Early development.",
-  "permissions": [],
-  "settings": []
+  "permissions": [
+    "data",
+    "profiles",
+    "state",
+    "ui"
+  ],
+  "settings": [],
+  "snapshot_fields": [
+    "character_name",
+    "health",
+    "max_health"
+  ],
+  "presentation": {
+    "title": "UtilityBelt",
+    "controls": "none",
+    "settings": false
+  }
 }

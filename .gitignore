@@ -1,2 +1,6 @@
 dist/
 notes/
+manager/**/bin/
+manager/**/obj/
+*.user
+.vs/

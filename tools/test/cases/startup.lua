@@ -1,4 +1,10 @@
--- The scaffold reports its version and the player's health.
+-- The plugin reports its version, shows the player's health, and offers the retail import.
+local function find_control(out, id)
+    for _, c in ipairs(out and out.ui or {}) do
+        if c.id == id then return c end
+    end
+end
+
 return {
     name = "startup status",
     steps = {
@@ -6,9 +12,12 @@ return {
             snapshot = { time = 1, health = 1234, max_health = 2000 },
             check = function(out, t)
                 t.ok(type(out) == "table", "callback returns a table")
-                t.ok(type(out.status) == "string", "status is a string")
-                t.ok(out.status and string.find(out.status, "UtilityBelt", 1, true) ~= nil, "status names the plugin")
-                t.ok(out.status and string.find(out.status, "1,234/2,000", 1, true) ~= nil, "health is formatted with separators")
+                t.ok(type(out.status) == "string" and string.find(out.status, "UtilityBelt", 1, true) ~= nil, "status names the plugin")
+                local health = find_control(out, "ub_health")
+                t.ok(health and string.find(health.text, "1,234/2,000", 1, true) ~= nil, "health is shown with separators")
+                local button = find_control(out, "ub_retail_import")
+                t.ok(button and button.type == "button", "offers Import from retail")
+                t.ok(out.requests == nil, "no service request before the character is known")
             end,
         },
         {

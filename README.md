@@ -8,9 +8,29 @@ plugin-API additions go to [Thwargle/ACE](https://github.com/Thwargle/ACE).
 
 ## Status
 
-Scaffold only: the plugin loads and shows its version and your health in the Plugin Manager.
+Early development. The plugin loads, shows its version and your health, and can apply your
+retail UtilityBelt settings (Import from retail). No UB tools are ported yet.
 
-## Install
+## Install with UB Manager (recommended)
+
+Download `UBManager.exe` from the [releases](https://github.com/Schneebs/AC_Unreal_UtilityBelt_ILT/releases) and run it.
+It needs no installer or administrator rights (Windows 10/11, .NET Framework 4.8, which Windows includes).
+
+- **Install / Update:** finds your AC:Unreal client, downloads the plugin, checks its SHA-256 and installs it.
+  The previous version is kept for **Roll back**. Choose the **Stable** or **Beta** channel.
+- **Retail import:** reads your retail UtilityBelt folder (`Documents\Decal Plugins\UtilityBelt`) without changing it,
+  and copies settings, per-character files, named profiles, global variables and quest flags into the plugin's
+  profile library. Tick the worlds you want. Then, in game, press **Import from retail** in UtilityBelt
+  (it also runs automatically the first time each character logs in).
+- **Update UB Manager** appears when a newer version is released. **Install UB Manager for this user**
+  copies it to `%LOCALAPPDATA%\UBManager` with a Start menu shortcut.
+- Windows SmartScreen may warn because the exe isn't signed yet; compare it with the `.sha256` on the release page.
+
+UB Manager also has a command line for scripting and testing:
+`UBManager.exe --check [stable|beta]`, `--scan <retail folder>`, `--import <retail folder> <ClientPlugins folder> [--worlds=A,B]`,
+`--install <ClientPlugins folder> [stable|beta]`, `--rollback <folder>`, `--uninstall <folder> [--all]`, plus `--log=<file>`.
+
+## Install by hand
 
 Download `utilitybelt-<version>.zip` from the [latest release](https://github.com/Schneebs/AC_Unreal_UtilityBelt_ILT/releases/latest)
 and extract it into the client's user plugin folder, so you end up with:
@@ -51,8 +71,9 @@ lua5.4 tools/test/run_tests.lua dist/utilitybelt/main.lua tools/test/cases/start
 ## Releasing
 
 Push a tag: `v0.1.0` publishes a stable release, `v0.2.0-beta.1` a pre-release (Beta channel).
-GitHub Actions lints, builds, syntax-checks and tests the plugin, then attaches
-`utilitybelt-<version>.zip`, its `.sha256` and `latest.json` (read by UB Manager) to the release.
+GitHub Actions lints, builds, syntax-checks and tests the plugin, builds and smoke-tests UB Manager,
+then attaches `utilitybelt-<version>.zip`, `UBManager.exe`, their `.sha256` files and `latest.json`
+(read by UB Manager for updates) to the release.
 
 ## Layout
 
@@ -64,6 +85,7 @@ GitHub Actions lints, builds, syntax-checks and tests the plugin, then attaches
 | `plugin/assets/` | `images/` and `sounds/` copied into the plugin |
 | `tools/build-plugin.ps1` | Lint, build, package, checksum, `latest.json` |
 | `tools/test/` | Snapshot test harness and cases |
+| `manager/UBManager/` | UB Manager (C#, .NET Framework 4.8, WinForms; build with `dotnet build -c Release`) |
 | `.github/workflows/release.yml` | CI and releases |
 
 ## API gaps

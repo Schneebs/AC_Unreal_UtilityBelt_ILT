@@ -84,8 +84,14 @@ for i = 2, #arg do
             failures = failures + 1
             io.write("  FAIL main.lua must return a function, got " .. tostring(callback) .. "\n")
         else
+            local previous
             for n, step in ipairs(case.steps or {}) do
-                local ok2, out = limited(callback, deep_copy(step.snapshot or {}), deep_copy(step.profile or {}))
+                -- A step's snapshot may be a function of the previous output (e.g. to answer
+                -- a service request with its id).
+                local snapshot = step.snapshot
+                if type(snapshot) == "function" then snapshot = snapshot(previous) end
+                local ok2, out = limited(callback, deep_copy(snapshot or {}), deep_copy(step.profile or {}))
+                previous = ok2 and out or nil
                 local t = {
                     ok = function(cond, msg)
                         checks = checks + 1
