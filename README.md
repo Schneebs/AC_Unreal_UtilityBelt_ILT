@@ -22,13 +22,18 @@ It needs no installer or administrator rights (Windows 10/11, .NET Framework 4.8
   and copies settings, per-character files, named profiles, global variables and quest flags into the plugin's
   profile library. Tick the worlds you want. Then, in game, press **Import from retail** in UtilityBelt
   (it also runs automatically the first time each character logs in).
+- **Import ThwargLauncher logins:** copies ThwargLauncher's servers and accounts (`%APPDATA%\ThwargLauncher`)
+  into AC:Unreal's login screen, optionally with saved passwords (stored DPAPI-encrypted for your Windows user,
+  as AC:Unreal does). Existing AC:Unreal entries are kept, duplicates skipped, and the old login file is backed up.
+  Close AC:Unreal first.
 - **Update UB Manager** appears when a newer version is released. **Install UB Manager for this user**
   copies it to `%LOCALAPPDATA%\UBManager` with a Start menu shortcut.
 - Windows SmartScreen may warn because the exe isn't signed yet; compare it with the `.sha256` on the release page.
 
 UB Manager also has a command line for scripting and testing:
 `UBManager.exe --check [stable|beta]`, `--scan <retail folder>`, `--import <retail folder> <ClientPlugins folder> [--worlds=A,B]`,
-`--install <ClientPlugins folder> [stable|beta]`, `--rollback <folder>`, `--uninstall <folder> [--all]`, plus `--log=<file>`.
+`--install <ClientPlugins folder> [stable|beta]`, `--rollback <folder>`, `--uninstall <folder> [--all]`,
+`--thwarg-import <ThwargLauncher folder|default> <client folder> [--no-passwords] [--dry-run]`, plus `--log=<file>`.
 
 ## Install by hand
 

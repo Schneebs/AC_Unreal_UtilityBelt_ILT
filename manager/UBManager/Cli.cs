@@ -75,6 +75,18 @@ namespace UBManager
                         finally { if (File.Exists(zip)) File.Delete(zip); }
                         return 0;
                     }
+                    case "--thwarg-import":
+                    {
+                        // --thwarg-import <ThwargLauncher folder | default> <client folder> [--no-passwords] [--dry-run]
+                        var folder = Require(args, 1);
+                        if (folder == "default") folder = ThwargImporter.DefaultFolder;
+                        var target = Target(Require(args, 2));
+                        var r = ThwargImporter.Import(folder, target, !args.Contains("--no-passwords"), args.Contains("--dry-run"));
+                        Out($"{(args.Contains("--dry-run") ? "dry run: would add" : "added")} servers {r.ServersAdded} (existing {r.ServersSkipped}, invalid {r.ServersInvalid}), accounts {r.AccountsAdded} (existing {r.AccountsSkipped}) -> {r.LoginFile}");
+                        if (r.Backup != null) Out("backup " + r.Backup);
+                        foreach (var n in r.Notes) Out("note " + n);
+                        return 0;
+                    }
                     case "--rollback":
                         PluginInstaller.Rollback(Target(Require(args, 1)), Out);
                         return 0;

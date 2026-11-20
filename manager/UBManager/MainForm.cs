@@ -52,10 +52,13 @@ namespace UBManager
             var clientRow = Row();
             var addFolder = new Button { Text = "Add folder…", AutoSize = true };
             var openPlugins = new Button { Text = "Open plugin folder", AutoSize = true };
+            var thwargImport = new Button { Text = "Import ThwargLauncher logins…", AutoSize = true };
             clientRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
             clientRow.Controls.Add(clients, 0, 0);
             clientRow.Controls.Add(addFolder, 1, 0);
             clientRow.Controls.Add(openPlugins, 2, 0);
+            clientRow.Controls.Add(thwargImport, 3, 0);
+            thwargImport.Click += (s, e) => ImportThwarg();
             clientBox.Controls.Add(clientRow);
             root.Controls.Add(clientBox);
 
@@ -281,6 +284,41 @@ namespace UBManager
             public readonly RetailWorld World;
             public WorldItem(RetailWorld w) { World = w; }
             public override string ToString() => $"{World.Name}  ({World.Characters.Count:N0} characters)";
+        }
+
+        private void ImportThwarg()
+        {
+            var t = Selected;
+            if (t == null) { Log("Choose an AC:Unreal client first."); return; }
+            var folder = ThwargImporter.DefaultFolder;
+            if (!Directory.Exists(folder))
+            {
+                using (var dialog = new FolderBrowserDialog { Description = "Choose ThwargLauncher's data folder (normally %APPDATA%\\ThwargLauncher)" })
+                {
+                    if (dialog.ShowDialog(this) != DialogResult.OK) return;
+                    folder = dialog.SelectedPath;
+                }
+            }
+            try
+            {
+                var running = ThwargImporter.RunningClient(t);
+                if (running != null) { Log($"Close AC:Unreal ({running}) first: it rewrites its saved logins when it exits."); return; }
+                var preview = ThwargImporter.Import(folder, t, true, dryRun: true);
+                foreach (var n in preview.Notes) Log("Note: " + n);
+                var answer = MessageBox.Show(this,
+                    $"Add {preview.ServersAdded} servers and {preview.AccountsAdded} accounts from ThwargLauncher to this AC:Unreal client?\n" +
+                    $"({preview.ServersSkipped} servers and {preview.AccountsSkipped} accounts are already there and will be left as they are.)\n\n" +
+                    "Yes: include saved passwords (stored encrypted for your Windows user, like AC:Unreal does).\n" +
+                    "No: add the accounts without passwords; you type each one once in AC:Unreal.\n" +
+                    "Cancel: change nothing.\n\nThe current login file is backed up first.",
+                    "Import ThwargLauncher logins", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+                if (answer == DialogResult.Cancel) return;
+                var r = ThwargImporter.Import(folder, t, answer == DialogResult.Yes, dryRun: false);
+                Log($"Added {r.ServersAdded} servers and {r.AccountsAdded} accounts" + (answer == DialogResult.Yes ? " with their passwords" : " without passwords") + ".");
+                if (r.Backup != null) Log("Previous logins backed up to " + r.Backup);
+                Log("Start AC:Unreal: your servers and accounts are on the login screen.");
+            }
+            catch (Exception ex) { Log("ThwargLauncher import failed, nothing was changed: " + ex.Message); }
         }
 
         private async Task SelfUpdateAsync()
